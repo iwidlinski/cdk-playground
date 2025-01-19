@@ -25,6 +25,7 @@ class UsersStack(Stack):
         scope: Construct,
         construct_id: str,
         username: str,
+        role: str,
         **kwargs,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -33,7 +34,7 @@ class UsersStack(Stack):
         user = iam.User(self, username, user_name=username)
         user.add_managed_policy(
             iam.ManagedPolicy.from_aws_managed_policy_name(
-                "AdministratorAccess",
+                f"{role}",
             ),
         )
         access_key = iam.AccessKey(self, "AccessKey", user=user)
