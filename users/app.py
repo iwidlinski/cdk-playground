@@ -1,28 +1,30 @@
 #!/usr/bin/env python3
-import os
+from __future__ import annotations
 
-import aws_cdk as cdk
+import logging
+
+from aws_cdk import App
+from aws_cdk import Environment
 
 from users.users_stack import UsersStack
 
+logger = logging.getLogger(__name__)
+loghandler = logging.StreamHandler()
+formatter = logging.Formatter(
+    "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+loghandler.setFormatter(formatter)
+logger.addHandler(loghandler)
+logger.setLevel(logging.DEBUG)
 
-app = cdk.App()
-UsersStack(app, "UsersStack",
-    # If you don't specify 'env', this stack will be environment-agnostic.
-    # Account/Region-dependent features and context lookups will not work,
-    # but a single synthesized template can be deployed anywhere.
+app = App()
+profile = app.node.try_get_context("profile")
+account_id = app.node.try_get_context("accountID")
+region_name = app.node.try_get_context("region")
 
-    # Uncomment the next line to specialize this stack for the AWS Account
-    # and Region that are implied by the current CLI configuration.
+env_info = Environment(account=account_id, region=region_name)
+logger.debug(env_info)
 
-    #env=cdk.Environment(account=os.getenv('CDK_DEFAULT_ACCOUNT'), region=os.getenv('CDK_DEFAULT_REGION')),
-
-    # Uncomment the next line if you know exactly what Account and Region you
-    # want to deploy the stack to. */
-
-    #env=cdk.Environment(account='123456789012', region='us-east-1'),
-
-    # For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html
-    )
-
+UsersStack(app, "UsersStack", username="admin", env=env_info)
+UsersStack(app, "UsersStack-john", username="john", env=env_info)
 app.synth()
